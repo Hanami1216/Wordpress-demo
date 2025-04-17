@@ -1,31 +1,43 @@
-version: '3.1'  # 指定 Docker Compose 文件的版本
+version: '3.1'
 
-services:  # 定义服务
+services:
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./hanamimusic.cn_nginx:/etc/nginx/ssl:ro
+    depends_on:
+      - wordpress
 
-  wordpress:  # WordPress 服务配置
-    image: wordpress  # 使用的 WordPress 镜像
-    restart: always  # 服务崩溃后总是重启
-    ports:  # 端口映射
-      - 8080:80  # 将宿主机的 8080 端口映射到容器的 80 端口
-    environment:  # 环境变量配置
-      WORDPRESS_DB_HOST: db  # 数据库主机
-      WORDPRESS_DB_USER: hanami  # 数据库用户
-      WORDPRESS_DB_PASSWORD: hanami  # 数据库密码
-      WORDPRESS_DB_NAME: wordpress_db  # 数据库名称
-    volumes:  # 持久化存储配置
-      - wordpress:/var/www/html  # 将 wordpress 卷挂载到容器的指定目录
+  wordpress:
+    image: wordpress
+    restart: always
+    expose:
+      - "80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: hanami
+      WORDPRESS_DB_PASSWORD: hanami
+      WORDPRESS_DB_NAME: wordpress_db
+    volumes:
+      - wordpress:/var/www/html
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
 
-  db:  # 数据库服务配置
-    image: mysql:8.0  # 使用的 MySQL 镜像
-    restart: always  # 服务崩溃后总是重启
-    environment:  # 环境变量配置
-      MYSQL_DATABASE: wordpress_db  # 默认数据库名称
-      MYSQL_USER: hanami  # 数据库用户
-      MYSQL_PASSWORD: hanami  # 数据库密码
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'  # 随机生成根用户密码
-    volumes:  # 持久化存储配置
-      - db:/var/lib/mysql  # 将 db 卷挂载到容器的数据目录
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: hanami
+      MYSQL_PASSWORD: hanami
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
 
-volumes:  # 定义卷
-  wordpress:  # WordPress 数据卷
-  db:  # 数据库数据卷
+volumes:
+  wordpress:
+  db:
